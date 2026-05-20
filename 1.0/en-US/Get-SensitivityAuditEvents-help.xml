@@ -1,0 +1,277 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems schema="maml" xmlns="http://msh">
+  <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10"
+                   xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10"
+                   xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10"
+                   xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+    <command:details>
+      <command:name>Get-SensitivityLabelAuditEvents</command:name>
+      <command:verb>Get</command:verb>
+      <command:noun>SensitivityLabelAuditEvents</command:noun>
+      <maml:description>
+        <maml:para>Retrieves Unified Audit Log entries for sensitivity label operations from Exchange Online.</maml:para>
+      </maml:description>
+      <command:aliases>
+        <command:alias>GSLAE</command:alias>
+      </command:aliases>
+    </command:details>
+
+    <maml:description>
+      <maml:para>Get-SensitivityLabelAuditEvents is an advanced function that:</maml:para>
+      <maml:para>1. Ensures the ExchangeOnlineManagement module is present. If not installed, it is automatically fetched from the PowerShell Gallery into the CurrentUser scope. If already installed, it is imported into the current session.</maml:para>
+      <maml:para>2. Connects to Exchange Online using the provided UserPrincipalName.</maml:para>
+      <maml:para>3. Queries Search-UnifiedAuditLog for every known sensitivity label operation (or a specific one when -Operations is supplied) over the specified date range and emits structured output for each record found.</maml:para>
+      <maml:para>4. Disconnects from Exchange Online when finished, unless -StayConnected is specified.</maml:para>
+      <maml:para>Conditional properties are only present on records where the underlying audit data contains the relevant field.</maml:para>
+    </maml:description>
+
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-SensitivityLabelAuditEvents</maml:name>
+        <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+          <maml:name>UserPrincipalName</maml:name>
+          <command:parameterValue required="true" variableLength="false">MailAddress</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>DaysBack</maml:name>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ResultSize</maml:name>
+          <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>Operations</maml:name>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>StayConnected</maml:name>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>AllData</maml:name>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>ExportToCsv</maml:name>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+          <maml:name>LogDirectory</maml:name>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+
+    <command:parameters>
+      <command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="0" aliases="none">
+        <maml:name>UserPrincipalName</maml:name>
+        <maml:description>
+          <maml:para>The UPN (email address) used to authenticate to Exchange Online. Example: admin@contoso.com</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">MailAddress</command:parameterValue>
+        <dev:type>
+          <maml:name>MailAddress</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>DaysBack</maml:name>
+        <maml:description>
+          <maml:para>How many days back from today to search the audit log. Must be between 1 and 365. Defaults to 100.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>100</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ResultSize</maml:name>
+        <maml:description>
+          <maml:para>Maximum number of records returned per operation type. Must be between 1 and 5000. Defaults to 5000.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">Int32</command:parameterValue>
+        <dev:type>
+          <maml:name>Int32</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>5000</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>Operations</maml:name>
+        <maml:description>
+          <maml:para>The specific sensitivity label operation to query. Defaults to 'All', which queries all 21 known operations covering file/item labels (M365 apps, Office for the web, SharePoint, auto-labeling), failure events, site/container labels, and legacy MIP operations. Supports tab-completion.</maml:para>
+          <maml:para>File/item ops (M365 apps): SensitivityLabelApplied, SensitivityLabelUpdated, SensitivityLabelRemoved, SensitivityLabelChanged.</maml:para>
+          <maml:para>File/item ops (Office for web / SharePoint / auto-labeling): FileSensitivityLabelApplied, FileSensitivityLabelChanged, FileSensitivityLabelRemoved.</maml:para>
+          <maml:para>Failure ops: FileSensitivityLabelAppliedFailed, FileSensitivityLabelChangedFailed, FileSensitivityLabelRemovedFailed.</maml:para>
+          <maml:para>Site/container ops: SiteSensitivityLabelApplied, SiteSensitivityLabelChanged, SiteSensitivityLabelRemoved.</maml:para>
+          <maml:para>Legacy/additional ops: SensitivityLabelFileRead, SensitivityLabeledFileOpened, SensitivityLabeledFileModified, SensitivityLabeledFileRenamed, SensitivityLabeledFileDeleted, SensitivityLabelPolicyMatched, SensitivityLabelPolicyChanged.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>All</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>StayConnected</maml:name>
+        <maml:description>
+          <maml:para>When specified, the Exchange Online session is NOT disconnected after the query completes. Useful when chaining multiple Exchange Online operations in the same session.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>AllData</maml:name>
+        <maml:description>
+          <maml:para>When specified, console output shows all available properties for each record, one per line with multi-line values indented. A blank line separates each record. Also enables per-operation console messages showing how many records were returned (Yellow) or that no records were found (Red). By default, a condensed table showing UserIds, UserType, Operations, CreationDate, ResultIndex, ClientIP, Workload, Application, and DeviceName is displayed.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>ExportToCsv</maml:name>
+        <maml:description>
+          <maml:para>When specified, exports all collected audit records to a timestamped CSV file (e.g. AuditResults_20260520_120134.csv) in -LogDirectory. If no records were collected the export is skipped.</maml:para>
+        </maml:description>
+        <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+        <dev:type>
+          <maml:name>SwitchParameter</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>False</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none">
+        <maml:name>LogDirectory</maml:name>
+        <maml:description>
+          <maml:para>Specifies the full path to the directory where log files will be written. Each run creates a new timestamped log file named Logging_yyyyMMdd_HHmmss.txt so runs never share or overwrite each other. Defaults to a subdirectory named 'Get-SensitivityLabelAuditEvents' inside $env:TEMP.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>$env:TEMP\Get-SensitivityLabelAuditEvents</dev:defaultValue>
+      </command:parameter>
+    </command:parameters>
+
+    <command:inputTypes>
+      <command:inputType>
+        <dev:type>
+          <maml:name>None</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para>This function does not accept pipeline input.</maml:para>
+        </maml:description>
+      </command:inputType>
+    </command:inputTypes>
+
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type>
+          <maml:name>System.Management.Automation.PSCustomObject</maml:name>
+        </dev:type>
+        <maml:description>
+          <maml:para>Each output object contains core properties: UserIds, UserType, Operations, CreationDate, ResultIndex, ClientIP, Workload, Application, DeviceName. Conditional properties (To, From, Subject, Justification, SensitivityLabelId, CurrentProtectionType, PreviousProtectionType, LabelId, ContentType) are added only when the underlying audit data is present.</maml:para>
+        </maml:description>
+      </command:returnValue>
+    </command:returnValues>
+
+    <maml:alertSet>
+      <maml:alert>
+        <maml:para>This function has the alias GSLAE.</maml:para>
+        <maml:para>Requires PowerShell 7.1 or later.</maml:para>
+        <maml:para>Module installation uses the CurrentUser scope — no elevated privileges required.</maml:para>
+        <maml:para>Each run creates a separate timestamped log file (Logging_yyyyMMdd_HHmmss.txt) inside -LogDirectory. The log directory is created automatically if it does not exist. Every activity line is prefixed with a timestamp. Each collected record is written to the log with one property per line; multi-line values are indented. A separator line marks the start and end of every run. The full log file path is printed to the console in Cyan at the end of each run.</maml:para>
+        <maml:para>A progress bar is displayed while querying operations, showing the current operation name and percent complete.</maml:para>
+        <maml:para>The account used must have the Audit Logs role in Exchange Online (typically held by the Compliance Administrator or Security Administrator roles).</maml:para>
+        <maml:para>ExchangeOnlineManagement: https://www.powershellgallery.com/packages/ExchangeOnlineManagement</maml:para>
+      </maml:alert>
+    </maml:alertSet>
+
+    <command:examples>
+      <command:example>
+        <maml:title>-------------------------- Example 1: Query all operations --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com</dev:code>
+        <dev:remarks>
+          <maml:para>Connects as admin@contoso.com, queries all 21 sensitivity label operations over the last 100 days, displays a condensed table on the console, writes full per-property records to a timestamped log file, then disconnects.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 2: Limit date range and result size --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -DaysBack 30 -ResultSize 1000</dev:code>
+        <dev:remarks>
+          <maml:para>Queries only the last 30 days, returning up to 1000 records per operation type.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 3: Query a single operation type --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -Operations SensitivityLabelApplied</dev:code>
+        <dev:remarks>
+          <maml:para>Queries only SensitivityLabelApplied events from the last 100 days.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 4: Leave session open --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -StayConnected</dev:code>
+        <dev:remarks>
+          <maml:para>Queries all audit data and leaves the Exchange Online session open for further commands.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 5: Write logs to a custom directory --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -LogDirectory "C:\Reports\AuditLogs"</dev:code>
+        <dev:remarks>
+          <maml:para>Writes all log output to a timestamped file such as C:\Reports\AuditLogs\Logging_20260520_120134.txt.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 6: Show all properties per record on the console --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -AllData</dev:code>
+        <dev:remarks>
+          <maml:para>Displays every property of each record on the console, one per line with multi-line values indented, separated by a blank line between records.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 7: Export results to CSV --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -ExportToCsv</dev:code>
+        <dev:remarks>
+          <maml:para>Exports all collected records to a timestamped CSV file (e.g. AuditResults_20260520_120134.csv) in -LogDirectory.</maml:para>
+        </dev:remarks>
+      </command:example>
+    </command:examples>
+
+    <maml:relatedLinks>
+      <maml:navigationLink>
+        <maml:linkText>Search-UnifiedAuditLog</maml:linkText>
+        <maml:uri>https://learn.microsoft.com/en-us/powershell/module/exchange/search-unifiedauditlog</maml:uri>
+      </maml:navigationLink>
+      <maml:navigationLink>
+        <maml:linkText>Connect-ExchangeOnline</maml:linkText>
+        <maml:uri>https://learn.microsoft.com/en-us/powershell/module/exchange/connect-exchangeonline</maml:uri>
+      </maml:navigationLink>
+    </maml:relatedLinks>
+  </command:command>
+</helpItems>
