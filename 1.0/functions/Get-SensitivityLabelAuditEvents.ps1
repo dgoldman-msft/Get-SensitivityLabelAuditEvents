@@ -58,6 +58,10 @@ function Get-SensitivityLabelAuditEvents {
             SensitivityLabeledFileRenamed, SensitivityLabeledFileDeleted,
             SensitivityLabelPolicyMatched, SensitivityLabelPolicyChanged
 
+        Note: SensitivityLabelRemoved covers label removals in Microsoft 365 desktop apps (Word,
+        Excel, PowerPoint, Outlook). Removals via Office for the web, SharePoint, or Teams appear
+        under FileSensitivityLabelRemoved instead.
+
     .PARAMETER StayConnected
         When specified, the Exchange Online session is NOT disconnected after the query completes.
         Useful when chaining multiple Exchange Online operations in the same session.
@@ -81,6 +85,16 @@ function Get-SensitivityLabelAuditEvents {
         overwrite each other. The log directory is created automatically if it does not exist.
         Defaults to a subdirectory named 'Get-SensitivityLabelAuditEvents' inside the system temp
         folder ($env:TEMP).
+
+    .PARAMETER FilterDeviceName
+        When specified, only records whose DeviceName matches this value are included in the output
+        and log. Supports wildcards (e.g. 'WIN*', '*laptop*'). Matching is case-insensitive.
+        Applied after all audit queries complete.
+
+    .PARAMETER FilterWorkload
+        When specified, only records whose Workload matches this value are included in the output
+        and log. Supports wildcards (e.g. 'SharePoint*', 'MipAutoLabel*'). Matching is
+        case-insensitive. Applied after all audit queries complete.
 
     .EXAMPLE
         C:\PS> Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com
@@ -125,6 +139,16 @@ function Get-SensitivityLabelAuditEvents {
 
         Exports all collected records to a timestamped CSV file (e.g. AuditResults_20260520_120134.csv)
         in -LogDirectory.
+
+    .EXAMPLE
+        C:\PS> Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName 'WIN*'
+
+        Returns only records where DeviceName starts with 'WIN'. Supports wildcards.
+
+    .EXAMPLE
+        C:\PS> Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterWorkload 'PublicEndpoint'
+
+        Returns only records from the PublicEndpoint workload (desktop app labeling events).
 
     .INPUTS
         None. This function does not accept pipeline input.
@@ -210,7 +234,13 @@ function Get-SensitivityLabelAuditEvents {
         [switch]$ExportToCsv,
 
         [Parameter()]
-        [string]$LogDirectory = (Join-Path $env:TEMP 'Get-SensitivityLabelAuditEvents')
+        [string]$LogDirectory = (Join-Path $env:TEMP 'Get-SensitivityLabelAuditEvents'),
+
+        [Parameter()]
+        [string]$FilterDeviceName,
+
+        [Parameter()]
+        [string]$FilterWorkload
     )
 
     begin {
@@ -410,6 +440,18 @@ function Get-SensitivityLabelAuditEvents {
         $ProgressPreference = $savedProgressPreference
 
         Write-ToLogFile -StringObject "$(Get-TimeStamp) Query complete. Total records collected: $($allResults.Count)" -LogFile $logFile
+
+        # Apply optional post-query filters
+        if ($FilterDeviceName) {
+            $before = $allResults.Count
+            $allResults = [System.Collections.Generic.List[pscustomobject]]($allResults | Where-Object { $_.DeviceName -like $FilterDeviceName })
+            Write-ToLogFile -StringObject "$(Get-TimeStamp) FilterDeviceName '$FilterDeviceName' applied — $($allResults.Count) of $before record(s) match" -LogFile $logFile
+        }
+        if ($FilterWorkload) {
+            $before = $allResults.Count
+            $allResults = [System.Collections.Generic.List[pscustomobject]]($allResults | Where-Object { $_.Workload -like $FilterWorkload })
+            Write-ToLogFile -StringObject "$(Get-TimeStamp) FilterWorkload '$FilterWorkload' applied — $($allResults.Count) of $before record(s) match" -LogFile $logFile
+        }
 
         # Console output — table by default, full list with -AllData
         if ($AllData) {

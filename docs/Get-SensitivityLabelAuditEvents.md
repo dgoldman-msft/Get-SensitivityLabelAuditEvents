@@ -26,6 +26,8 @@ Get-SensitivityLabelAuditEvents [-UserPrincipalName] <MailAddress>
     [-AllData]
     [-ExportToCsv]
     [-LogDirectory <String>]
+    [-FilterDeviceName <String>]
+    [-FilterWorkload <String>]
     [-WhatIf]
     [-Confirm]
     [<CommonParameters>]
@@ -111,6 +113,30 @@ Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -ExportToCs
 
 Exports all collected records to a timestamped CSV file (e.g. `AuditResults_20260520_120134.csv`) in `-LogDirectory`.
 
+### Example 9: Filter by device name
+
+```powershell
+Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName 'WIN*'
+```
+
+Returns only records where `DeviceName` starts with `WIN`. Wildcards are supported.
+
+### Example 10: Filter by workload
+
+```powershell
+Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterWorkload 'PublicEndpoint'
+```
+
+Returns only records from the `PublicEndpoint` workload (desktop app labeling events).
+
+### Example 11: Combine filters
+
+```powershell
+Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName '*WIN11*' -FilterWorkload 'PublicEndpoint' -ExportToCsv
+```
+
+Filters to `WIN11` devices on the `PublicEndpoint` workload and exports matches to CSV.
+
 ## PARAMETERS
 
 ### -UserPrincipalName
@@ -169,7 +195,7 @@ The specific sensitivity label operation to query. Defaults to 'All', which quer
 Type: String
 Parameter Sets: (All)
 Aliases:
-Accepted values: All, SensitivityLabelApplied, SensitivityLabelUpdated, SensitivityLabelRemoved, SensitivityLabelChanged, FileSensitivityLabelApplied, FileSensitivityLabelChanged, FileSensitivityLabelRemoved, FileSensitivityLabelAppliedFailed, FileSensitivityLabelChangedFailed, FileSensitivityLabelRemovedFailed, SiteSensitivityLabelApplied, SiteSensitivityLabelChanged, SiteSensitivityLabelRemoved, SensitivityLabelFileRead, SensitivityLabeledFileOpened, SensitivityLabeledFileModified, SensitivityLabeledFileRenamed, SensitivityLabeledFileDeleted, SensitivityLabelPolicyMatched, SensitivityLabelPolicyChanged
+Accepted values: All, SensitivityLabelApplied, SensitivityLabelUpdated, SensitivityLabelRemoved, FileSensitivityLabelApplied, FileSensitivityLabelChanged, FileSensitivityLabelRemoved, FileSensitivityLabelAppliedFailed, FileSensitivityLabelChangedFailed, FileSensitivityLabelRemovedFailed, SiteSensitivityLabelApplied, SiteSensitivityLabelChanged, SiteSensitivityLabelRemoved, SensitivityLabelFileRead, SensitivityLabeledFileOpened, SensitivityLabeledFileModified, SensitivityLabeledFileRenamed, SensitivityLabeledFileDeleted, SensitivityLabelPolicyMatched, SensitivityLabelPolicyChanged
 
 Required: False
 Position: Named
@@ -242,6 +268,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -FilterDeviceName
+
+When specified, only records whose DeviceName matches this value are included in the output and log. Supports wildcards (e.g. `WIN*`, `*laptop*`). Matching is case-insensitive. Applied after all audit queries complete.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: True
+```
+
+### -FilterWorkload
+
+When specified, only records whose Workload matches this value are included in the output and log. Supports wildcards (e.g. `SharePoint*`, `MipAutoLabel*`). Matching is case-insensitive. Applied after all audit queries complete.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: True
+```
+
 ### -WhatIf
 
 Shows what would happen if the cmdlet runs. The cmdlet is not run.
@@ -295,9 +353,15 @@ The following properties are conditionally present:
 | Property | Present when |
 | --- | --- |
 | To, From, Subject | EmailInfo exists in the audit record |
-| Justification, SensitivityLabelId | SensitivityLabelEventData exists |
-| CurrentProtectionType, PreviousProtectionType, LabelId | Application is populated |
+| Justification | SensitivityLabelEventData.JustificationText is present (label downgrade events) |
+| SensitivityLabelId | SensitivityLabelEventData is present |
+| OldSensitivityLabelId | Label was changed from a previous label (SensitivityLabelUpdated, FileSensitivityLabelChanged) |
+| CurrentProtectionType, PreviousProtectionType, LabelId | Application is populated (desktop app events) |
 | ContentType | Workload is MipAutoLabelPublicEndpoint |
+
+When present, `CurrentProtectionType` and `PreviousProtectionType` are rendered as multi-line `key=value` pairs. `protectionType` values: 0 = no protection, 1 = template, 2 = Do Not Forward, 3 = Encrypt-Only, 4 = custom.
+
+Filters (`-FilterDeviceName`, `-FilterWorkload`) are applied after all queries complete. Records that do not match are excluded from both the console output and the log.
 
 ## NOTES
 

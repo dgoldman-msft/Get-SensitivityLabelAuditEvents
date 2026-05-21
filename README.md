@@ -55,6 +55,8 @@ Get-SensitivityLabelAuditEvents
 | `-AllData` | Switch | No | `$false` | Show all properties on the console; also enables per-operation count/not-found messages |
 | `-ExportToCsv` | Switch | No | `$false` | Export all collected records to a timestamped CSV file in `-LogDirectory` |
 | `-LogDirectory` | String | No | `$env:TEMP\Get-SensitivityLabelAuditEvents` | Directory for timestamped log files (created automatically if absent) |
+| `-FilterDeviceName` | String | No | — | After querying, keep only records whose `DeviceName` matches this value. Supports wildcards (e.g. `WIN*`). Case-insensitive. |
+| `-FilterWorkload` | String | No | — | After querying, keep only records whose `Workload` matches this value. Supports wildcards (e.g. `SharePoint*`). Case-insensitive. |
 
 ### Valid values for -Operations
 
@@ -119,6 +121,24 @@ Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -LogDirecto
 
 ```powershell
 GSLAE -UserPrincipalName admin@contoso.com
+```
+
+### 9. Filter results to a specific device
+
+```powershell
+Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName 'WIN*'
+```
+
+### 10. Filter results to a specific workload
+
+```powershell
+Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterWorkload 'PublicEndpoint'
+```
+
+### 11. Combine filters — device and workload together
+
+```powershell
+Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName '*WIN11*' -FilterWorkload 'PublicEndpoint' -ExportToCsv
 ```
 
 ## Output

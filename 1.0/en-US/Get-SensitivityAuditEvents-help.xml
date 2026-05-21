@@ -57,6 +57,14 @@
           <maml:name>LogDirectory</maml:name>
           <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
         </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="true" pipelineInput="False" position="named" aliases="none">
+          <maml:name>FilterDeviceName</maml:name>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
+        <command:parameter required="false" variableLength="true" globbing="true" pipelineInput="False" position="named" aliases="none">
+          <maml:name>FilterWorkload</maml:name>
+          <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        </command:parameter>
       </command:syntaxItem>
     </command:syntax>
 
@@ -104,7 +112,7 @@
         <maml:name>Operations</maml:name>
         <maml:description>
           <maml:para>The specific sensitivity label operation to query. Defaults to 'All', which queries all 21 known operations covering file/item labels (M365 apps, Office for the web, SharePoint, auto-labeling), failure events, site/container labels, and legacy MIP operations. Supports tab-completion.</maml:para>
-          <maml:para>File/item ops (M365 apps): SensitivityLabelApplied, SensitivityLabelUpdated, SensitivityLabelRemoved, SensitivityLabelChanged.</maml:para>
+          <maml:para>File/item ops (M365 apps): SensitivityLabelApplied, SensitivityLabelUpdated, SensitivityLabelRemoved. Note: SensitivityLabelRemoved covers desktop apps only; FileSensitivityLabelRemoved covers Office for the web, SharePoint, and Teams.</maml:para>
           <maml:para>File/item ops (Office for web / SharePoint / auto-labeling): FileSensitivityLabelApplied, FileSensitivityLabelChanged, FileSensitivityLabelRemoved.</maml:para>
           <maml:para>Failure ops: FileSensitivityLabelAppliedFailed, FileSensitivityLabelChangedFailed, FileSensitivityLabelRemovedFailed.</maml:para>
           <maml:para>Site/container ops: SiteSensitivityLabelApplied, SiteSensitivityLabelChanged, SiteSensitivityLabelRemoved.</maml:para>
@@ -169,6 +177,32 @@
         </dev:type>
         <dev:defaultValue>$env:TEMP\Get-SensitivityLabelAuditEvents</dev:defaultValue>
       </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="true" pipelineInput="False" position="named" aliases="none">
+        <maml:name>FilterDeviceName</maml:name>
+        <maml:description>
+          <maml:para>When specified, only records whose DeviceName matches this value are included in the output and log. Supports wildcards (e.g. WIN*, *laptop*). Matching is case-insensitive. Applied after all audit queries complete.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
+
+      <command:parameter required="false" variableLength="true" globbing="true" pipelineInput="False" position="named" aliases="none">
+        <maml:name>FilterWorkload</maml:name>
+        <maml:description>
+          <maml:para>When specified, only records whose Workload matches this value are included in the output and log. Supports wildcards (e.g. SharePoint*, MipAutoLabel*). Matching is case-insensitive. Applied after all audit queries complete.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+        <dev:type>
+          <maml:name>String</maml:name>
+          <maml:uri />
+        </dev:type>
+        <dev:defaultValue>None</dev:defaultValue>
+      </command:parameter>
     </command:parameters>
 
     <command:inputTypes>
@@ -188,7 +222,7 @@
           <maml:name>System.Management.Automation.PSCustomObject</maml:name>
         </dev:type>
         <maml:description>
-          <maml:para>Each output object contains core properties: UserIds, UserType, Operations, CreationDate, ResultIndex, ClientIP, Workload, Application, DeviceName. Conditional properties (To, From, Subject, Justification, SensitivityLabelId, CurrentProtectionType, PreviousProtectionType, LabelId, ContentType) are added only when the underlying audit data is present.</maml:para>
+          <maml:para>Each output object contains core properties: UserIds, UserType, Operations, CreationDate, ResultIndex, ClientIP, Workload, Application, DeviceName. Conditional properties (To, From, Subject, Justification, SensitivityLabelId, OldSensitivityLabelId, CurrentProtectionType, PreviousProtectionType, LabelId, ContentType) are added only when the underlying audit data is present. Filters (-FilterDeviceName, -FilterWorkload) are applied after querying; non-matching records are excluded from output and log.</maml:para>
         </maml:description>
       </command:returnValue>
     </command:returnValues>
@@ -259,6 +293,30 @@
         <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -ExportToCsv</dev:code>
         <dev:remarks>
           <maml:para>Exports all collected records to a timestamped CSV file (e.g. AuditResults_20260520_120134.csv) in -LogDirectory.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 8: Filter by device name --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName 'WIN*'</dev:code>
+        <dev:remarks>
+          <maml:para>Returns only records where DeviceName starts with WIN. Wildcards are supported.</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 9: Filter by workload --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterWorkload 'PublicEndpoint'</dev:code>
+        <dev:remarks>
+          <maml:para>Returns only records from the PublicEndpoint workload (desktop app labeling events).</maml:para>
+        </dev:remarks>
+      </command:example>
+
+      <command:example>
+        <maml:title>-------------------------- Example 10: Combine device and workload filters --------------------------</maml:title>
+        <dev:code>Get-SensitivityLabelAuditEvents -UserPrincipalName admin@contoso.com -FilterDeviceName '*WIN11*' -FilterWorkload 'PublicEndpoint' -ExportToCsv</dev:code>
+        <dev:remarks>
+          <maml:para>Filters to WIN11 devices on the PublicEndpoint workload and exports matching records to CSV.</maml:para>
         </dev:remarks>
       </command:example>
     </command:examples>
